@@ -7,6 +7,10 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 const defaultCoords = [19.0760, 72.8777]; // Mumbai
 const defaultZoom = 13;
 const towers = {};
+const links = [];
+let tempLine = null;
+let selectedTowerId = null;
+let isDraggingForLink = false;
 
 
 map.setView(defaultCoords, defaultZoom);
@@ -21,7 +25,7 @@ const towerIcon = L.icon({
 const showConfigModal = (e, id, type) => {
     const configModal = document.querySelector('.config-modal');
     configModal.classList.remove("hide");
-
+    console.log("type",type )
     const lat = configModal.querySelector('#lat');
     const lng = configModal.querySelector('#lng');
     lat.textContent = e.latlng.lat.toFixed(2);
@@ -55,6 +59,17 @@ const closeModal = (e) => {
 }
 
 map.on('click', (e) => {
+    const configModal = document.querySelector('.config-modal');
+    if(!configModal.classList.contains('hide')) {
+        closeModal();
+        return;
+    }
+
+    if (isDraggingForLink) {
+        isDraggingForLink = false; // reset and ignore
+        return;
+    }
+
     const id = new Date().getTime();
     const marker = L.marker(e.latlng, {icon: towerIcon}).addTo(map);
 
@@ -79,6 +94,71 @@ map.on('click', (e) => {
         }
     ).openTooltip();
 
+    marker.on('mousedown', () => {
+        selectedTowerId = id; // start tower
+        map.dragging.disable();
+    });
+
+    marker.on('mouseup', () => {
+        if (selectedTowerId && selectedTowerId !== id) {
+            const startMarker = towers[selectedTowerId].marker;
+            const endMarker = marker;
+
+            // finalize the line
+            const line = L.polyline([startMarker.getLatLng(), endMarker.getLatLng()], {
+                color: 'blue',
+                weight: 3
+            }).addTo(map);
+
+            links.push({
+                from: selectedTowerId,
+                to: id,
+                line
+            });
+        }
+
+        // cleanup preview line
+        if (tempLine) {
+            tempLine.remove();
+            tempLine = null;
+        }
+        selectedTowerId = null;
+        isDraggingForLink = false;
+    });
+
+    marker.on('click', (e) => {
+        // If drag occurred, don't open config
+        if (isDraggingForLink) return;
+
+        // Open the modal for editing this tower
+        showConfigModal(
+            { latlng: marker.getLatLng() },  // pass location
+            id,
+            "edit"
+        );
+    });
+
     showConfigModal(e, id, "create");
     console.log(towers);
+});
+
+map.on('mousemove', (e) => {
+    if (!selectedTowerId) return;
+
+    isDraggingForLink = true; // now we know this was a drag, not a click
+
+    const startMarker = towers[selectedTowerId].marker;
+
+    if (tempLine) tempLine.remove();
+
+    tempLine = L.polyline([startMarker.getLatLng(), e.latlng], { dashArray: '4,6' }).addTo(map);
+});
+
+map.on('mouseup', () => {
+    if (tempLine) {
+        tempLine.remove();
+        tempLine = null;
+    }
+    selectedTowerId = null;
+    map.dragging.enable();
 });
