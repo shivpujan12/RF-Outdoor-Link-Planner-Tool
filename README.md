@@ -8,3 +8,7 @@ Project Overview
 Tech Stack used:
 1. leaflet
 2. html, css and js
+
+Demo link: https://rf-outdoor-link-planner-tool-psi.vercel.app/ 
+
+How to use Video link: https://github.com/shivpujan12/RF-Outdoor-Link-Planner-Tool/blob/main/demo.mov
