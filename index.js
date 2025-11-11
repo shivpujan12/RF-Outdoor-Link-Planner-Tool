@@ -7,7 +7,6 @@ class Map {
     towers = [];
     links = [];
 
-    // linking state
     linkingFrom = null;
     previewLine = null;
     suppressNextClick = false;
@@ -25,6 +24,19 @@ class Map {
 
         map.setView(this.defaultCoords, this.defaultZoom);
 
+        const info = L.control({ position: 'topright' });
+        info.onAdd = function () {
+            const div = L.DomUtil.create('div', 'map-instructions');
+            div.style.background = 'white';
+            div.style.padding = '8px 12px';
+            div.style.borderRadius = '4px';
+            div.style.boxShadow = '0 1px 4px rgba(0,0,0,0.3)';
+            div.style.fontSize = '13px';
+            div.innerHTML = Config.info;
+            return div;
+        };
+        info.addTo(map);
+
         map.on('click', (e) => this.handleClick(e))
         map.on('mousemove',(e)=>this.handleMouseMove(e))
         map.on('mouseup', () => {
@@ -39,7 +51,7 @@ class Map {
         this.towers.forEach(t => {
             if (t.freq !== tower.freq) {
                 t.marker.setIcon(L.icon({
-                    iconUrl: "redTower.png",
+                    iconUrl: Config.RED_TOWER_IMAGE,
                     iconSize: [45,45],
                     iconAnchor: [22,45],
                     tooltipAnchor: [0,-46]

@@ -16,4 +16,15 @@ class Config {
         UPDATE: 'update',
         CREATE: 'create'
     }
+
+    static info = `
+                <b>How to Use:</b><br>
+                • Click to place a tower<br>
+                • Click a tower to edit<br>
+                • Drag from one tower to another to link<br>
+                • Links only allowed between same frequency
+            `
+
+    static RED_TOWER_IMAGE = "imgs/redTower.png";
+    static TOWER_IMAGE = "imgs/img.png";
 }
