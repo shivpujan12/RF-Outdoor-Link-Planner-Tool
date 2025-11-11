@@ -27,19 +27,36 @@ class Map {
 
         map.on('click', (e) => this.handleClick(e))
         map.on('mousemove',(e)=>this.handleMouseMove(e))
+        map.on('mouseup', () => {
+            if (this.linkingFrom) {
+                this.cancelLinking();
+            }
+        });
     }
 
     startLink(tower){
         this.linkingFrom = tower;
+        this.towers.forEach(t => {
+            if (t.freq !== tower.freq) {
+                t.marker.setIcon(L.icon({
+                    iconUrl: "redTower.png",
+                    iconSize: [45,45],
+                    iconAnchor: [22,45],
+                    tooltipAnchor: [0,-46]
+                }));
+            }
+        });
         this.map.dragging.disable();
     }
 
     endLink(tower){
-        if(this.linkingFrom && this.linkingFrom!==tower){
-            const link = new Link(this.linkingFrom, tower,this.map);
-            this.links.push(link);
-            console.log(this.links);
-            this.suppressNextClick = true;
+        if (this.linkingFrom && this.linkingFrom !== tower) {
+            if (this.linkingFrom.freq === tower.freq) {
+                const link = new Link(this.linkingFrom, tower, this.map);
+                this.links.push(link);
+                console.log(this.links);
+                this.suppressNextClick = true;
+            }
         }
 
         this.cancelLinking();
@@ -50,7 +67,11 @@ class Map {
         if (this.previewLine) {
             this.previewLine.remove();
             this.previewLine = null;
+            this.suppressNextClick = true;
         }
+        this.towers.forEach(t => {
+            t.marker.setIcon(Tower.towerIcon);
+        });
         this.map.dragging.enable();
     }
 

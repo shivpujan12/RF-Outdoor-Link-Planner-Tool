@@ -65,6 +65,10 @@ class Tower {
                 L.DomEvent.stop(e);
                 return;
             }
+            if (this.data.context && this.data.context.suppressNextClick) {
+                this.data.context.suppressNextClick = false;
+                return;
+            }
             this.handleTowerClick();
         });
 
@@ -72,6 +76,17 @@ class Tower {
             // Prevent this from turning into a map click later
             L.DomEvent.stopPropagation(e);
             this.data.context.startLink(this);
+
+            this.towers.forEach(t => {
+                if (t.freq !== this.freq) {
+                    t.marker.setIcon(L.icon({
+                        iconUrl: "redTower.png",
+                        iconSize: [45,45],
+                        iconAnchor: [22,45],
+                        tooltipAnchor: [0,-46]
+                    }));
+                }
+            });
         });
 
         this.marker.on('mouseup', (e) => {
